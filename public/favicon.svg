@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Option Recommend">
+  <defs>
+    <linearGradient id="mark" x1="10" y1="8" x2="54" y2="56" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0aa43f" />
+      <stop offset="1" stop-color="#7ddf82" />
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="18" fill="url(#mark)" />
+  <path
+    d="M32 9l4.9 14.1L51 28l-14.1 4.9L32 47l-4.9-14.1L13 28l14.1-4.9L32 9z"
+    fill="#fff"
+    opacity="0.96"
+  />
+  <path
+    d="M49 39l2.2 6.3L58 48l-6.8 2.7L49 57l-2.2-6.3L40 48l6.8-2.7L49 39z"
+    fill="#fff"
+    opacity="0.82"
+  />
+</svg>
