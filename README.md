@@ -108,3 +108,10 @@ The app does not use tracking cookies.
 Option Recommend is for informational and educational purposes only. It does not provide financial, investment, legal, or tax advice and is not a recommendation to buy, sell, or hold any security, option, or financial product.
 
 Trading options involves risk, including possible loss of principal. AI-generated content and pasted responses may be inaccurate, incomplete, outdated, or misleading. Always verify information independently, do your own research, and consult a qualified financial professional before making investment decisions.
+
+## TODO
+
+The next stage of the website.
+
+- [ ] Send requests and get responses from AI api.
+- [ ] Allow user to select AI provider.
