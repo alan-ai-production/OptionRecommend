@@ -1,0 +1,2 @@
+export const DISCLAIMER =
+    `Option Recommend is for informational and educational purposes only. It does not provide financial, investment, legal, or tax advice and is not a recommendation to buy, sell, or hold any security, option, or financial product. Trading options involves risk, including possible loss of principal. AI-generated content and responses may be inaccurate, incomplete, outdated, or misleading. Always verify information independently, do your own research, and consult a qualified financial professional before making investment decisions.`;
