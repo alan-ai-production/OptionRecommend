@@ -478,6 +478,7 @@ button:disabled {
 }
 
 .section-title h3 {
+  cursor: text;
   overflow-wrap: anywhere;
 }
 

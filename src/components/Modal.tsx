@@ -80,6 +80,9 @@ export function SectionModal({
   value,
   error,
   placeholder,
+  title = "Create Section",
+  submitLabel = "Create Section",
+  submitIcon = "plus",
   onChange,
   onClose,
   onSubmit,
@@ -87,12 +90,15 @@ export function SectionModal({
   value: string;
   error: string | null;
   placeholder: string;
+  title?: string;
+  submitLabel?: string;
+  submitIcon?: "plus" | "check";
   onChange: (value: string) => void;
   onClose: () => void;
   onSubmit: (event: FormEvent) => void;
 }) {
   return (
-    <Modal title="Create Section" onClose={onClose}>
+    <Modal title={title} onClose={onClose}>
       <form className="modal-form" onSubmit={onSubmit}>
         <label className="field">
           <span>Section label</span>
@@ -105,8 +111,8 @@ export function SectionModal({
         </label>
         {error ? <p className="form-error">{error}</p> : null}
         <button className="primary-button full" type="submit">
-          <Plus aria-hidden="true" />
-          <span>Create Section</span>
+          {submitIcon === "check" ? <Check aria-hidden="true" /> : <Plus aria-hidden="true" />}
+          <span>{submitLabel}</span>
         </button>
       </form>
     </Modal>

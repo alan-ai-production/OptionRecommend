@@ -1,4 +1,5 @@
 export type Theme = "light" | "dark";
+export type Page = "home" | "settings";
 
 export type Entry = {
   id: string;

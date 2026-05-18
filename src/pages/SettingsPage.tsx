@@ -1,60 +1,22 @@
 import { useRef, useState } from "react";
-import type { Dispatch, SetStateAction } from "react";
 import { Download, Settings, Trash2, Upload } from "lucide-react";
 import { exportBackup, readBackupFile } from "../backup";
 import { ImportChoiceModal } from "../components/Modal";
-import { defaultState, STORAGE_KEY } from "../storage";
-import type { AppState, ConfirmDialog, TickerTab } from "../types";
+import { useStateManager } from "../state/StateManager";
+import type { AppState } from "../types";
 
-function createId() {
-  return crypto.randomUUID();
-}
-
-function createUniqueTicker(ticker: string, usedTickers: Set<string>) {
-  let candidate = ticker;
-  let suffix = 2;
-
-  while (usedTickers.has(candidate.toLowerCase())) {
-    candidate = `${ticker}-${suffix}`;
-    suffix += 1;
-  }
-
-  usedTickers.add(candidate.toLowerCase());
-  return candidate;
-}
-
-function cloneImportedTab(tab: TickerTab, ticker: string): TickerTab {
-  return {
-    id: createId(),
-    ticker,
-    sections: tab.sections.map((section) => ({
-      ...section,
-      id: createId(),
-      entries: section.entries.map((entry) => ({
-        ...entry,
-        id: createId(),
-      })),
-    })),
-  };
-}
-
-export function SettingsPage({
-  state,
-  setState,
-  setConfirmDialog,
-}: {
-  state: AppState;
-  setState: Dispatch<SetStateAction<AppState>>;
-  setConfirmDialog: Dispatch<SetStateAction<ConfirmDialog | null>>;
-}) {
+export function SettingsPage() {
+  const {
+    mergeImportedState,
+    replaceImportedState,
+    requestResetLocalData,
+    state,
+    updatePromptTemplate,
+  } = useStateManager();
   const importInputRef = useRef<HTMLInputElement | null>(null);
   const [pendingImport, setPendingImport] = useState<AppState | null>(null);
   const [transferStatus, setTransferStatus] = useState<string | null>(null);
   const [transferError, setTransferError] = useState<string | null>(null);
-
-  function updatePromptTemplate(promptTemplate: string) {
-    setState((current) => ({ ...current, promptTemplate }));
-  }
 
   async function handleExportBackup() {
     setTransferError(null);
@@ -101,7 +63,7 @@ export function SettingsPage({
       return;
     }
 
-    setState(pendingImport);
+    replaceImportedState(pendingImport);
     setPendingImport(null);
     setTransferError(null);
     setTransferStatus("Imported backup and replaced local data.");
@@ -112,40 +74,17 @@ export function SettingsPage({
       return;
     }
 
-    setState((current) => {
-      const usedTickers = new Set(current.tabs.map((tab) => tab.ticker.toLowerCase()));
-      const importedTabs = pendingImport.tabs.map((tab) =>
-        cloneImportedTab(tab, createUniqueTicker(tab.ticker, usedTickers)),
-      );
-
-      return {
-        ...current,
-        tabs: [...current.tabs, ...importedTabs],
-        activeTabId: current.activeTabId ?? current.tabs[0]?.id ?? importedTabs[0]?.id ?? null,
-      };
-    });
+    mergeImportedState(pendingImport);
     setPendingImport(null);
     setTransferError(null);
     setTransferStatus("Imported backup and merged ticker tabs.");
   }
 
   function resetLocalData() {
-    setConfirmDialog({
-      title: "Reset local data?",
-      message:
-        "This will clear this app's saved tabs, sections, entries, prompt template, theme, and restore the default state.",
-      confirmLabel: "Reset Data",
-      onConfirm: () => {
-        localStorage.removeItem(STORAGE_KEY);
-        setPendingImport(null);
-        setTransferError(null);
-        setTransferStatus("Local data reset to defaults.");
-        setState({
-          ...defaultState,
-          tabs: [],
-          activeTabId: null,
-        });
-      },
+    requestResetLocalData(() => {
+      setPendingImport(null);
+      setTransferError(null);
+      setTransferStatus("Local data reset to defaults.");
     });
   }
 
