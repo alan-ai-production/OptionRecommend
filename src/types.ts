@@ -4,12 +4,15 @@ export type Entry = {
   id: string;
   createdAt: string;
   responseText: string;
+  isCollapsed?: boolean;
 };
 
 export type DateSection = {
   id: string;
   label: string;
+  createdAt?: string;
   entries: Entry[];
+  isCollapsed?: boolean;
 };
 
 export type TickerTab = {

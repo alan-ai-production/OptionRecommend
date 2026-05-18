@@ -117,6 +117,7 @@ button:disabled {
 .github-button,
 .page-tabs button,
 .icon-button,
+.collapse-button,
 .primary-button,
 .secondary-button,
 .danger-button,
@@ -444,6 +445,38 @@ button:disabled {
   gap: 14px;
 }
 
+.collapse-button {
+  display: inline-grid;
+  width: 34px;
+  height: 34px;
+  flex: 0 0 auto;
+  place-items: center;
+  padding: 0;
+  color: var(--muted);
+  background: var(--panel-solid);
+}
+
+.collapse-button:hover,
+.collapse-button:focus-visible {
+  color: var(--green-dark);
+  background: var(--green-soft);
+}
+
+.collapse-button svg {
+  width: 18px;
+  height: 18px;
+}
+
+.collapse-button.compact {
+  width: 30px;
+  height: 30px;
+}
+
+.collapse-button.compact svg {
+  width: 16px;
+  height: 16px;
+}
+
 .section-title h3 {
   overflow-wrap: anywhere;
 }
@@ -463,10 +496,21 @@ button:disabled {
   border-top: 1px solid var(--line);
 }
 
+.entry-card.collapsed {
+  grid-template-columns: 1fr;
+}
+
 .entry-actions {
   display: grid;
   align-content: start;
   gap: 12px;
+}
+
+.entry-title-row {
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+  gap: 10px;
 }
 
 .entry-name {
@@ -1001,6 +1045,10 @@ a:focus-visible {
   }
 
   .entry-name {
+    grid-column: 1 / -1;
+  }
+
+  .entry-title-row {
     grid-column: 1 / -1;
   }
 

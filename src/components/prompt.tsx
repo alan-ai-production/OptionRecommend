@@ -3,7 +3,7 @@ Objective: Conduct a comprehensive trade feasibility study and provide a high-co
 
 Phase 1: Multi-Factor Stock Analysis
 - Technical Profile: Analyze price action using key moving averages, RSI for overbought/oversold conditions, and MACD for momentum shifts. Identify "sticky" support/resistance levels and chart patterns (e.g., breakouts, consolidations). You are allow to use other indicators for making decision.
-- Market Context: Evaluate the stock current relative strength against the S&P 500 and the stock sector. Identify upcoming catalysts (earnings, contract announcements etc.) that could impact Implied Volatility (IV).
+- Market Context: Evaluate the stock current relative strength against the S&P 500 and the stock sector. Identify upcoming catalysts (general news, economic events, earnings, contract announcements etc.) that could impact Implied Volatility (IV).
 
 Phase 2: Option Chain & Volatility Surface Optimization
 - Data Retrieval: Use real-time data (Yahoo Finance) to scan the option chain. Filter for:

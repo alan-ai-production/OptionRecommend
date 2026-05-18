@@ -1,6 +1,9 @@
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import {
   CalendarPlus,
+  ChevronDown,
+  ChevronRight,
+  ChevronsUpDown,
   Check,
   ClipboardCopy,
   FileText,
@@ -219,16 +222,63 @@ export default function App() {
     const section: DateSection = {
       id: createId(),
       label,
+      createdAt: new Date().toISOString(),
       entries: [],
+      isCollapsed: false,
     };
 
     updateState((current) => ({
       ...current,
       tabs: current.tabs.map((tab) =>
-        tab.id === activeTab.id ? { ...tab, sections: [...tab.sections, section] } : tab,
+        tab.id === activeTab.id ? { ...tab, sections: [section, ...tab.sections] } : tab,
       ),
     }));
     closeModal();
+  }
+
+  function toggleSection(sectionId: string) {
+    if (!activeTab) {
+      return;
+    }
+
+    updateState((current) => ({
+      ...current,
+      tabs: current.tabs.map((tab) =>
+        tab.id === activeTab.id
+          ? {
+            ...tab,
+            sections: tab.sections.map((section) =>
+              section.id === sectionId
+                ? { ...section, isCollapsed: !section.isCollapsed }
+                : section,
+            ),
+          }
+          : tab,
+      ),
+    }));
+  }
+
+  function toggleAllSections() {
+    if (!activeTab || activeTab.sections.length === 0) {
+      return;
+    }
+
+    const shouldCollapseSections = activeTab.sections.some((section) => !section.isCollapsed);
+
+    updateState((current) => ({
+      ...current,
+      tabs: current.tabs.map((tab) =>
+        tab.id === activeTab.id
+          ? {
+            ...tab,
+            sections: tab.sections.map((section) => ({
+              ...section,
+              isCollapsed: shouldCollapseSections,
+            })),
+          }
+          : tab,
+      ),
+    }));
   }
 
   function removeSection(sectionId: string) {
@@ -267,6 +317,7 @@ export default function App() {
       id: createId(),
       createdAt: new Date().toISOString(),
       responseText: "",
+      isCollapsed: false,
     };
 
     updateState((current) => ({
@@ -277,7 +328,7 @@ export default function App() {
             ...tab,
             sections: tab.sections.map((section) =>
               section.id === sectionId
-                ? { ...section, entries: [...section.entries, entry] }
+                ? { ...section, isCollapsed: false, entries: [...section.entries, entry] }
                 : section,
             ),
           }
@@ -316,6 +367,71 @@ export default function App() {
         }));
       },
     });
+  }
+
+  function toggleEntry(sectionId: string, entryId: string) {
+    if (!activeTab) {
+      return;
+    }
+
+    updateState((current) => ({
+      ...current,
+      tabs: current.tabs.map((tab) =>
+        tab.id === activeTab.id
+          ? {
+            ...tab,
+            sections: tab.sections.map((section) =>
+              section.id === sectionId
+                ? {
+                  ...section,
+                  entries: section.entries.map((entry) =>
+                    entry.id === entryId
+                      ? { ...entry, isCollapsed: !entry.isCollapsed }
+                      : entry,
+                  ),
+                }
+                : section,
+            ),
+          }
+          : tab,
+      ),
+    }));
+  }
+
+  function toggleAllEntries(sectionId: string) {
+    if (!activeTab) {
+      return;
+    }
+
+    const targetSection = activeTab.sections.find((section) => section.id === sectionId);
+    if (!targetSection || targetSection.entries.length === 0) {
+      return;
+    }
+
+    const shouldCollapseEntries = targetSection.entries.some((entry) => !entry.isCollapsed);
+
+    updateState((current) => ({
+      ...current,
+      tabs: current.tabs.map((tab) =>
+        tab.id === activeTab.id
+          ? {
+            ...tab,
+            sections: tab.sections.map((section) =>
+              section.id === sectionId
+                ? {
+                  ...section,
+                  isCollapsed: shouldCollapseEntries ? section.isCollapsed : false,
+                  entries: section.entries.map((entry) => ({
+                    ...entry,
+                    isCollapsed: shouldCollapseEntries,
+                  })),
+                }
+                : section,
+            ),
+          }
+          : tab,
+      ),
+    }));
   }
 
   async function copyPrompt() {
@@ -491,6 +607,19 @@ export default function App() {
                   </div>
 
                   <div className="toolbar-actions">
+                    <button
+                      className="secondary-button"
+                      disabled={activeTab.sections.length === 0}
+                      onClick={toggleAllSections}
+                      type="button"
+                    >
+                      <ChevronsUpDown aria-hidden="true" />
+                      <span>
+                        {activeTab.sections.some((section) => !section.isCollapsed)
+                          ? "Collapse Sections"
+                          : "Expand Sections"}
+                      </span>
+                    </button>
                     <button className="secondary-button" onClick={copyPrompt} type="button">
                       {copyStatus === activeTab.ticker ? (
                         <Check aria-hidden="true" />
@@ -515,86 +644,140 @@ export default function App() {
 
                 <div className="section-list">
                   {activeTab.sections.length > 0 ? (
-                    activeTab.sections.map((section) => (
-                      <article className="section-card" key={section.id}>
-                        <div className="section-header">
-                          <div className="section-title">
-                            <span className="round-icon">
-                              <FileText aria-hidden="true" />
-                            </span>
-                            <h3>{section.label}</h3>
+                    activeTab.sections.map((section) => {
+                      const hasEntries = section.entries.length > 0;
+                      const hasExpandedEntries = section.entries.some((entry) => !entry.isCollapsed);
+                      const bulkEntryLabel = hasExpandedEntries ? "Collapse Entries" : "Expand Entries";
+
+                      return (
+                        <article className="section-card" key={section.id}>
+                          <div className="section-header">
+                            <div className="section-title">
+                              <button
+                                aria-expanded={!section.isCollapsed}
+                                aria-label={`${section.isCollapsed ? "Expand" : "Collapse"} ${section.label}`}
+                                className="collapse-button"
+                                onClick={() => toggleSection(section.id)}
+                                type="button"
+                              >
+                                {section.isCollapsed ? (
+                                  <ChevronRight aria-hidden="true" />
+                                ) : (
+                                  <ChevronDown aria-hidden="true" />
+                                )}
+                              </button>
+                              <span className="round-icon">
+                                <FileText aria-hidden="true" />
+                              </span>
+                              <h3>{section.label}</h3>
+                            </div>
+                            <div className="section-actions">
+                              <button
+                                className="secondary-button"
+                                disabled={!hasEntries}
+                                onClick={() => toggleAllEntries(section.id)}
+                                type="button"
+                              >
+                                <ChevronsUpDown aria-hidden="true" />
+                                <span>{bulkEntryLabel}</span>
+                              </button>
+                              <button
+                                className="secondary-button"
+                                onClick={() => addEntry(section.id)}
+                                type="button"
+                              >
+                                <Plus aria-hidden="true" />
+                                <span>Add Entry</span>
+                              </button>
+                              <button
+                                className="danger-button"
+                                onClick={() => removeSection(section.id)}
+                                type="button"
+                              >
+                                <Trash2 aria-hidden="true" />
+                                <span>Remove Section</span>
+                              </button>
+                            </div>
                           </div>
-                          <div className="section-actions">
-                            <button
-                              className="secondary-button"
-                              onClick={() => addEntry(section.id)}
-                              type="button"
-                            >
-                              <Plus aria-hidden="true" />
-                              <span>Add Entry</span>
-                            </button>
-                            <button
-                              className="danger-button"
-                              onClick={() => removeSection(section.id)}
-                              type="button"
-                            >
-                              <Trash2 aria-hidden="true" />
-                              <span>Remove Section</span>
-                            </button>
+
+                        {!section.isCollapsed && (
+                          <div className="entry-list">
+                            {section.entries.length > 0 ? (
+                              section.entries.map((entry, index) => {
+                                const table = parseSummaryMarkdownTable(entry.responseText);
+
+                                return (
+                                  <section
+                                    className={`entry-card ${entry.isCollapsed ? "collapsed" : ""}`}
+                                    key={entry.id}
+                                  >
+                                    <div className="entry-actions">
+                                      <div className="entry-title-row">
+                                        <button
+                                          aria-expanded={!entry.isCollapsed}
+                                          aria-label={`${entry.isCollapsed ? "Expand" : "Collapse"} entry ${index + 1}`}
+                                          className="collapse-button compact"
+                                          onClick={() => toggleEntry(section.id, entry.id)}
+                                          type="button"
+                                        >
+                                          {entry.isCollapsed ? (
+                                            <ChevronRight aria-hidden="true" />
+                                          ) : (
+                                            <ChevronDown aria-hidden="true" />
+                                          )}
+                                        </button>
+                                        <span className="entry-name">Entry {index + 1}</span>
+                                      </div>
+                                      {!entry.isCollapsed && (
+                                        <>
+                                          <button
+                                            className="action-tile"
+                                            onClick={() => openResponseModal(section.id, entry)}
+                                            type="button"
+                                          >
+                                            <MessageCircle aria-hidden="true" />
+                                            <span>Response</span>
+                                          </button>
+                                          <button
+                                            className="action-tile"
+                                            disabled={!entry.responseText.trim()}
+                                            onClick={() => openMarkdownPreview(entry)}
+                                            type="button"
+                                          >
+                                            <Eye aria-hidden="true" />
+                                            <span>View</span>
+                                          </button>
+                                          <button
+                                            className="danger-button compact"
+                                            onClick={() => removeEntry(section.id, entry.id)}
+                                            type="button"
+                                          >
+                                            <Trash2 aria-hidden="true" />
+                                            <span>Remove</span>
+                                          </button>
+                                        </>
+                                      )}
+                                    </div>
+
+                                    {!entry.isCollapsed && (
+                                      <div className="entry-content">
+                                        <ParsedTableView table={table} />
+                                      </div>
+                                    )}
+                                  </section>
+                                );
+                              })
+                            ) : (
+                              <EmptyState
+                                title="No entries yet"
+                                detail="Add an entry to copy the prompt and paste a response."
+                              />
+                            )}
                           </div>
-                        </div>
-
-                        <div className="entry-list">
-                          {section.entries.length > 0 ? (
-                            section.entries.map((entry, index) => {
-                              const table = parseSummaryMarkdownTable(entry.responseText);
-
-                              return (
-                                <section className="entry-card" key={entry.id}>
-                                  <div className="entry-actions">
-                                    <span className="entry-name">Entry {index + 1}</span>
-                                    <button
-                                      className="action-tile"
-                                      onClick={() => openResponseModal(section.id, entry)}
-                                      type="button"
-                                    >
-                                      <MessageCircle aria-hidden="true" />
-                                      <span>Response</span>
-                                    </button>
-                                    <button
-                                      className="action-tile"
-                                      disabled={!entry.responseText.trim()}
-                                      onClick={() => openMarkdownPreview(entry)}
-                                      type="button"
-                                    >
-                                      <Eye aria-hidden="true" />
-                                      <span>View</span>
-                                    </button>
-                                    <button
-                                      className="danger-button compact"
-                                      onClick={() => removeEntry(section.id, entry.id)}
-                                      type="button"
-                                    >
-                                      <Trash2 aria-hidden="true" />
-                                      <span>Remove</span>
-                                    </button>
-                                  </div>
-
-                                  <div className="entry-content">
-                                    <ParsedTableView table={table} />
-                                  </div>
-                                </section>
-                              );
-                            })
-                          ) : (
-                            <EmptyState
-                              title="No entries yet"
-                              detail="Add an entry to copy the prompt and paste a response."
-                            />
-                          )}
-                        </div>
+                        )}
                       </article>
-                    ))
+                      );
+                    })
                   ) : (
                     <EmptyState
                       title="No sections yet"

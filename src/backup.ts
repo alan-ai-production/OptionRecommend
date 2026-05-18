@@ -15,12 +15,17 @@ function normalizeEntry(value: unknown): Entry {
     throw new Error("Invalid entry data.");
   }
 
-  const { id, createdAt, responseText } = value;
+  const { id, createdAt, responseText, isCollapsed } = value;
   if (typeof id !== "string" || typeof createdAt !== "string" || typeof responseText !== "string") {
     throw new Error("Invalid entry data.");
   }
 
-  return { id, createdAt, responseText };
+  return {
+    id,
+    createdAt,
+    responseText,
+    isCollapsed: typeof isCollapsed === "boolean" ? isCollapsed : false,
+  };
 }
 
 function normalizeSection(value: unknown): DateSection {
@@ -28,7 +33,7 @@ function normalizeSection(value: unknown): DateSection {
     throw new Error("Invalid section data.");
   }
 
-  const { id, label, entries } = value;
+  const { id, label, createdAt, entries, isCollapsed } = value;
   if (typeof id !== "string" || typeof label !== "string" || !Array.isArray(entries)) {
     throw new Error("Invalid section data.");
   }
@@ -36,7 +41,9 @@ function normalizeSection(value: unknown): DateSection {
   return {
     id,
     label,
+    createdAt: typeof createdAt === "string" ? createdAt : undefined,
     entries: entries.map(normalizeEntry),
+    isCollapsed: typeof isCollapsed === "boolean" ? isCollapsed : false,
   };
 }
 
